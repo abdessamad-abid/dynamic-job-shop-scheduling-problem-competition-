@@ -69,14 +69,3 @@ class Agent:
                     return None
             else:
                 return sorted(sorted_list, key=lambda x: (job_status[x]['remain_pending_time']/job_status[x]['priority'],job_status[x]['remain_process_time']))[0]
-
-        
-
-
-
-
-
-
-
-
-
