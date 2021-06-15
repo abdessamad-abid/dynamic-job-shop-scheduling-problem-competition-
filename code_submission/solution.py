@@ -1,47 +1,41 @@
-from agent import Agent
-import time
+from agent import Agent, encoder
+import time as realtime
 from collections import defaultdict
 import numpy as np
 
 
+
+
+
 class Trainer:
     def __init__(self, Env, conf_list):
-        self.conf_list = conf_list
-        self.Env = Env
+        self.env = Env(config=conf_list[0])
         self.checkpoint = None
         self.iter = 0
-        ModelCatalog.register_custom_model('MaskModel', MaskedActionsModel)
 
     def train(self, run_time):
-        rl_env = get_env(self.Env, self.conf_list)
-        trainer = PPOTrainer(env=rl_env, config={
-            'train_batch_size':20000,
-            'num_workers':6,
-            'num_gpus':1,
-            'sgd_minibatch_size':2048,
-            'model':{
-                'custom_model': 'MaskModel'
-            },
-        })
-        now_time = time.time()
+        machine_status, job_status, time, job_list = self.env.reset()
+
+        done = False
+        lr = 0.0005
+        n_games = 500
+
+        agent = Agent(self.env, gamma=0.99, epsilon=1.0, alpha=lr, input_dims=8, n_actions=4, batch_size=64)
+
+        now_time = realtime.time()
         total_time = 0
         while True:
+            job_assignment = agent.act(encoder(machine_status, job_status, time, job_list))
+            machine_status, job_status, time, reward, job_list, done = self.env.step(job_assignment)
             last_time = now_time
-
-            result = trainer.train()
-            reward = result['episode_reward_mean']
-            print(f'Iteration: {self.iter}, reward: {reward}, training iteration: {trainer._iteration}')
-            now_time = time.time()
+            now_time = realtime.time()
             total_time += now_time - last_time
-            trainer.save(f'./work')
-            self.checkpoint = f'./work/checkpoint_{trainer._iteration}/checkpoint-{trainer._iteration}'
             self.iter += 1
 
             if total_time + 2*(now_time-last_time) > run_time:
                 break
 
-
-        return Agent(trainer, rl_env)
+        return agent
 
 
 
