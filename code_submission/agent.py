@@ -45,10 +45,10 @@ class ReplayBuffer:
 
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
-    #this is not our dqn it's just an exemple
+    #none complited dqn
 
     model = Sequential()
-    model.add(Dense(fc1_dims, Activation='relu'))
+    model.add(Dense(fc1_dims,input_shape=(input_dims, ), Activation='relu'))
     model.add(Dropout(0.2))
 
     model.add(Dense(fc2_dims, Activation='relu'))
@@ -73,18 +73,18 @@ def  decode(action_list):
     return job_assignment
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.996,  epsilon_end=0.01, mem_size=10000):
+    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=80000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
-        self.nb_machine=sum([len(env.machines[i]) for i in env.machines])
+        self.nb_machine=sum([len(env.machines[i]) for i in self.env.machines])
         self.epsilon_list = [epsilon for i in range(self.nb_machine)]
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_end
         self.batch_size = batch_size
         self.memory_per_machine = [ReplayBuffer(mem_size, input_dims, n_actions, discrete=True) for i in range(self.nb_machine)]
 
-        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 256, 256) for i in range(self.nb_machine)]
+        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 256, 256) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
 
     def remember(self, state, list_action, reward, new_state, done):
         for i in range(self.nb_machine):
@@ -107,7 +107,7 @@ class Agent:
         for i in range(self.nb_machine):
             if self.memory_per_machine[i].mem_cntr > self.batch_size:
                 state, action, reward, new_state, done = self.memory_per_machine[i].sample_buffer(self.batch_size)
-
+                #return the actiobs from one-hot encoding to numbers
                 action_values = np.array(self.action_space, dtype=np.int8)
                 action_indices = np.dot(action, action_values)
 
@@ -121,6 +121,6 @@ class Agent:
 
                 q_target[batch_index, action_indices] = reward + self.gamma*np.max(q_next, axis=1)*done
 
-                _ = self.q_eval_per_machine[i].fit(state, q_target, verbose=0)
+                _ = self.q_eval_per_machine[i].fit(state, q_target, verbose=0) #surpress the output
 
                 self.epsilon_list[i] = self.epsilon_list[i]*self.epsilon_dec if self.epsilon_list[i] > self.epsilon_min else self.epsilon_min
