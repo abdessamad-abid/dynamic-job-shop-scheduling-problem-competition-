@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
+from encoders import *
 import numpy as np
 
 
@@ -62,22 +63,16 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 
-def  decode(action_list, job_dict):
-    job_assignment = {}
-    for i in range(action_list):
-        if action_list[i] != 0:
-            job_assignment['M0'+str(i+1)] = 'J0'+str(action_list[i])
-        else:
-            job_assignment['M0' + str(i + 1)] = None
-    return job_assignment
+
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, job_dict,epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=8000):
+    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=8000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
         self.nb_machine=sum([len(env.machines[i]) for i in self.env.machines])
         self.job_dict = job_dict
+        self.machine_dict = machine_dict
         self.epsilon_list = [epsilon for i in range(self.nb_machine)]
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_end
@@ -100,7 +95,7 @@ class Agent:
             else:
                 actions = self.q_eval_per_machine[i].predict(state)
                 action_list.append(np.argmax(actions))
-        job_assignment = decode(action_list, self.job_dict)
+        job_assignment = decode(action_list, self.job_dict, self.machine_dict)
         return job_assignment
 
     def learn(self):
