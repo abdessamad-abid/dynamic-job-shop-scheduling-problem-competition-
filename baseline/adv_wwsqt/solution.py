@@ -26,7 +26,7 @@ class Agent:
             if job is not None:
                 for mm in job_list:
                     try:
-                        job_list[mm].remove(a)
+                        job_list[mm].remove('a')
                     except:
                         pass
                     finally:

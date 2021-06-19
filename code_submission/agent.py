@@ -62,8 +62,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 
-
-def  decode(action_list):
+def  decode(action_list, job_dict):
     job_assignment = {}
     for i in range(action_list):
         if action_list[i] != 0:
@@ -73,11 +72,12 @@ def  decode(action_list):
     return job_assignment
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=80000):
+    def __init__(self, env, alpha, gamma, n_actions, job_dict,epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=8000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
         self.nb_machine=sum([len(env.machines[i]) for i in self.env.machines])
+        self.job_dict = job_dict
         self.epsilon_list = [epsilon for i in range(self.nb_machine)]
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_end
@@ -100,14 +100,14 @@ class Agent:
             else:
                 actions = self.q_eval_per_machine[i].predict(state)
                 action_list.append(np.argmax(actions))
-        job_assignment = decode(action_list)
+        job_assignment = decode(action_list, self.job_dict)
         return job_assignment
 
     def learn(self):
         for i in range(self.nb_machine):
             if self.memory_per_machine[i].mem_cntr > self.batch_size:
                 state, action, reward, new_state, done = self.memory_per_machine[i].sample_buffer(self.batch_size)
-                #return the actiobs from one-hot encoding to numbers
+                #return the actions from one-hot encoding to numbers
                 action_values = np.array(self.action_space, dtype=np.int8)
                 action_indices = np.dot(action, action_values)
 
