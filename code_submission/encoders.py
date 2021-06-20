@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def  decode(action_list, job_dict, machine_dict):
+def decode(action_list, job_dict, machine_dict):
     job_assignment = {}
     for i in range(len(action_list)):
         machine = ''
@@ -45,19 +45,16 @@ def encoder(machine_status, job_status, job_list, env, done, time):
         state.append(machine_status[machine]['remain_time'])
 
     # calculate number of jobs:
-    number_of_jobs = 0
-    for job_type in env.job_types:
-        number_of_jobs += len(env.job_types[job_type])
+    number_of_jobs = len(job_status)
 
     # create job_dict
     job_dict = {'None': [0] * number_of_jobs}
     i = 0
-    for type in env.jobs:
-        for job in env.jobs[type]:
-            T = [0] * number_of_jobs
-            T[i] = 1
-            job_dict[job] = T
-            i += 1
+    for job in job_status:
+        T = [0] * number_of_jobs
+        T[i] = 1
+        job_dict[job] = T
+        i += 1
 
     for machine in machine_status:
         if machine_status[machine]['job'] != None:
@@ -67,12 +64,11 @@ def encoder(machine_status, job_status, job_list, env, done, time):
 
     for machine in machine_status:
 
-        for job_type in env.job_types:
-            for job in env.job_types[job_type]:
-                if job in machine_status[machine]['job_list']:
-                    state.append(1)
-                else:
-                    state.append(0)
+        for job  in job_status:
+            if job in machine_status[machine]['job_list']:
+                state.append(1)
+            else:
+                state.append(0)
 
     working_state = {'work': [1, 0, 0, 0],
                      'pending': [0, 1, 0, 0],
