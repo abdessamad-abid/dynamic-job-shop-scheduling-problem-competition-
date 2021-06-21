@@ -19,7 +19,7 @@ class Trainer:
         done = False
         state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
         lr = 0.0005
-        n_games = 800
+        n_games = 100
         number_of_actions = 1 + sum([len(self.env.jobs[job_type]) for job_type in self.env.jobs])
 
         nb_machines = sum([len(self.env.machines[i]) for i in self.env.machines])
