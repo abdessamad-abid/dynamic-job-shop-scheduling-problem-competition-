@@ -38,7 +38,7 @@ class Trainer:
                 action =[]
                 job_assignment = agent.act(state)
                 machine_status, job_status, time, reward, job_list, done = self.env.step(job_assignment)
-                new_state, job_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
+                new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']
                 for machine in job_assignment:
                     if job_assignment[machine] != None:

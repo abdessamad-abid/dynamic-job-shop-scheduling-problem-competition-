@@ -40,7 +40,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
     for machine in machine_status:
         state += status[machine_status[machine]['status']]
 
-    # remaning time
+    # remaining time
     for machine in machine_status:
         state.append(machine_status[machine]['remain_time'])
 
@@ -100,10 +100,9 @@ def encoder(machine_status, job_status, job_list, env, done, time):
             state += machine_dict['None']
         operation_name = job_status[job]['op']
         for type in env.job_types:
-            for operations in env.job_types[type]:
-                for operation in operations:
-                    if operation['op_name'] == operation_name:
-                        machine_type = operation['machine_type']
+            for operation in env.job_types[type]:
+                if operation['op_name'] == operation_name:
+                    machine_type = operation['machine_type']
         state += types[machine_type]
     # job list
     for machine in job_list:

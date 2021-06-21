@@ -49,10 +49,10 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     #none complited dqn
 
     model = Sequential()
-    model.add(Dense(fc1_dims,input_shape=(input_dims, ), Activation='relu'))
+    model.add(Dense(fc1_dims,input_shape=(input_dims, )))
     model.add(Dropout(0.2))
 
-    model.add(Dense(fc2_dims, Activation='relu'))
+    model.add(Dense(fc2_dims))
     model.add(Dropout(0.2))
 
     model.add(Dense(n_actions))
@@ -83,6 +83,7 @@ class Agent:
 
     def remember(self, state, list_action, reward, new_state, done):
         for i in range(self.nb_machine):
+            print(new_state.shape,state.shape)
             self.memory_per_machine[i].store_transition(state, list_action[i], reward, new_state, done)
 
     def act(self, state):
