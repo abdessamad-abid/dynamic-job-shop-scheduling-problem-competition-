@@ -79,59 +79,68 @@ def encoder(machine_status, job_status, job_list, env, done, time):
             else:
                 state += job_dict['None']
 
-    for machine in machine_status:
-
-        for job  in job_status:
-            if job in machine_status[machine]['job_list']:
-                state.append(1)
-            else:
-                state.append(0)
 
     working_state = {'work': [1, 0, 0, 0],
                      'pending': [0, 1, 0, 0],
                      'to_arrive': [0, 0, 1, 0],
-                     'done': [0, 0, 0, 1]}
+                     'done': [0, 0, 0, 1],
+                     'none':[0, 0, 0, 0]}
     # create machine_dict
     number_machines = sum([len(env.machines[i]) for i in env.machines])
     machine_dict = {'None': [0] * number_machines}
     i = 0
-    for machine in machine_status:
-        T = [0] * number_machines
-        T[i] = 1
-        machine_dict[machine] = T
-        i += 1
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in machine_status:
+                T = [0] * number_machines
+                T[i] = 1
+                machine_dict[machine] = T
+                i += 1
+            else:
+                machine_dict[machine] = [0] * number_machines
     # job status
-    for job in job_status:
-        state += working_state[job_status[job]['status']]
-        state.append(job_status[job]['priority'])
-        if job_status[job]['arrival'] == None:
-            state.append(0)
-        else:
-            state.append(job_status[job]['arrival'])
+    for type in env.jobs:
+        for job in env.jobs[type]:
+            if job in job_status:
+                state += working_state[job_status[job]['status']]
+                state.append(job_status[job]['priority'])
+                if job_status[job]['arrival'] == None:
+                    state.append(0)
+                else:
+                    state.append(job_status[job]['arrival'])
 
-        state.append(job_status[job]['remain_process_time'])
-        state.append(job_status[job]['remain_pending_time'])
-        if job_status[job]['machine'] != None:
-            state += machine_dict[job_status[job]['machine']]
-        else:
-            state += machine_dict['None']
-        operation_name = job_status[job]['op']
-        for type in env.job_types:
-            for operation in env.job_types[type]:
-                if operation['op_name'] == operation_name:
-                    machine_type = operation['machine_type']
-        state += types[machine_type]
+                state.append(job_status[job]['remain_process_time'])
+                state.append(job_status[job]['remain_pending_time'])
+                if job_status[job]['machine'] != None:
+                    state += machine_dict[job_status[job]['machine']]
+                else:
+                    state += machine_dict['None']
+                operation_name = job_status[job]['op']
+                for type in env.job_types:
+                    for operation in env.job_types[type]:
+                        if operation['op_name'] == operation_name:
+                            machine_type = operation['machine_type']
+                state += types[machine_type]
+            else:
+                state += working_state['none']
+                state.append(0)#priority
+                state.append(0)#arrival
+                state.append(0)#remaining process time
+                state.append(0)#remainig pending time
+                state += machine_dict['None']
+                state += types['none']
     # job list
     for machine in job_list:
         m_list = []
         if job_list[machine] == []:
-            state += [0 for i in range(number_of_jobs)]
+            state += [0] * number_of_jobs
         else:
-            for job in job_status:
-                if job in job_list[machine]:
-                    m_list.append(1)
-                else:
-                    m_list.append(0)
+            for type in env.jobs:
+                for job in env.jobs[type]:
+                    if job in job_list[machine]:
+                        m_list.append(1)
+                    else:
+                        m_list.append(0)
         state += m_list
     if done:
         state.append(1)
