@@ -18,8 +18,8 @@ class Trainer:
 
         done = False
         state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
-        lr = 0.0005
-        n_games = 100
+        lr = 0.005
+        n_games = 1000
         number_of_actions = 1 + len(job_status)
 
         nb_machines = sum([len(self.env.machines[i]) for i in self.env.machines])
@@ -33,6 +33,7 @@ class Trainer:
             done = False
             score = 0
             machine_status, job_status, time, job_list = self.env.reset()
+
             state,job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
             while not done:
                 action =[]

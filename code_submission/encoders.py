@@ -103,7 +103,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
             for operation in env.job_types[type]:
                 if operation['op_name'] == operation_name:
                     machine_type = operation['machine_type']
-        state += types[machine_type]
+                    state += types[machine_type]
     # job list
     for machine in job_list:
         m_list = []
