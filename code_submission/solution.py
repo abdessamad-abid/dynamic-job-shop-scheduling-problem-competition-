@@ -20,7 +20,7 @@ class Trainer:
         state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
         lr = 0.0005
         n_games = 100
-        number_of_actions = 1 + sum([len(self.env.jobs[job_type]) for job_type in self.env.jobs])
+        number_of_actions = 1 + len(job_status)
 
         nb_machines = sum([len(self.env.machines[i]) for i in self.env.machines])
         agent = Agent(self.env,job_dict=job_dict, machine_dict=machine_dict, gamma=0.99, epsilon=1.0, alpha=lr, input_dims=len(state), n_actions=number_of_actions, batch_size=64)
@@ -40,12 +40,7 @@ class Trainer:
                 machine_status, job_status, time, reward, job_list, done = self.env.step(job_assignment)
                 new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']
-                for machine in job_assignment:
-                    if job_assignment[machine] != None:
-                        action.append(int(job_assignment[machine][2:]))
-                    else:
-                        action.append(0)
-                agent.remember(state,action, reward,new_state, done)
+                agent.remember(state,action, score,new_state, done)
                 agent.learn()
                 last_time = now_time
                 now_time = realtime.time()
@@ -56,7 +51,7 @@ class Trainer:
                     break
             if total_time + 2 * (now_time - last_time) > run_time:
                 break
-            eps_history.append(agent.epsilon_list[0])
+            eps_history.append(agent.epsilon_list[i])
             scores.append(score)
 
 

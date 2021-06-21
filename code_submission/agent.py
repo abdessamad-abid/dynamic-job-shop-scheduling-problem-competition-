@@ -120,5 +120,3 @@ class Agent:
                 self.q_eval_per_machine[i].fit(state, q_target, verbose=0) #surpress the output
 
                 self.epsilon_list[i] = self.epsilon_list[i]*self.epsilon_dec if self.epsilon_list[i] > self.epsilon_min else self.epsilon_min
-            else:
-                pass
