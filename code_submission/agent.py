@@ -66,7 +66,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=5000):
+    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=1000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
@@ -120,3 +120,5 @@ class Agent:
                 self.q_eval_per_machine[i].fit(state, q_target, verbose=0) #surpress the output
 
                 self.epsilon_list[i] = self.epsilon_list[i]*self.epsilon_dec if self.epsilon_list[i] > self.epsilon_min else self.epsilon_min
+            else:
+                pass
