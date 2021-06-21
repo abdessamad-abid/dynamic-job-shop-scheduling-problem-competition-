@@ -22,45 +22,62 @@ def decode(action_list, job_dict, machine_dict):
 def encoder(machine_status, job_status, job_list, env, done, time):
     ## machine status one-hot encoded:
     state = []
-    types = {}
+
     # type of machine
     n_types = len(env.machines)
+    types = { 'none': [0]*n_types}
     i = 0
     for type in env.machines:
         T = [0] * n_types
         T[i] = 1
         types[type] = T
         i += 1
-    for machine in machine_status:
-        state += types[machine_status[machine]['type']]
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in machine_status:
+                state += types[machine_status[machine]['type']]
+            else:
+                state += types['none']
     # status:
     status = {'down': [1, 0, 0],
               'idle': [0, 1, 0],
-              'work': [0, 0, 1]}
-    for machine in machine_status:
-        state += status[machine_status[machine]['status']]
+              'work': [0, 0, 1],
+              'none': [0, 0, 0]}
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in machine_status:
+                state += status[machine_status[machine]['status']]
+            else:
+                state += status['none']
 
     # remaining time
-    for machine in machine_status:
-        state.append(machine_status[machine]['remain_time'])
-
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in machine_status:
+                state.append(machine_status[machine]['remain_time'])
+            else:
+                state.append(0)
     # calculate number of jobs:
-    number_of_jobs = len(job_status)
+    number_of_jobs = sum([len(env.jobs[i]) for i in env.jobs])
 
     # create job_dict
     job_dict = {'None': [0] * number_of_jobs}
     i = 0
-    for job in job_status:
-        T = [0] * number_of_jobs
-        T[i] = 1
-        job_dict[job] = T
-        i += 1
-
-    for machine in machine_status:
-        if machine_status[machine]['job'] != None:
-            state += job_dict[machine_status[machine]['job']]
-        else:
-            state += job_dict['None']
+    for type in env.jobs:
+        for job in env.jobs[type]:
+            T = [0] * number_of_jobs
+            T[i] = 1
+            job_dict[job] = T
+            i += 1
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in machine_status:
+                if machine_status[machine]['job'] != None:
+                    state += job_dict[machine_status[machine]['job']]
+                else:
+                    state += job_dict['None']
+            else:
+                state += job_dict['None']
 
     for machine in machine_status:
 
@@ -75,7 +92,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
                      'to_arrive': [0, 0, 1, 0],
                      'done': [0, 0, 0, 1]}
     # create machine_dict
-    number_machines = len(machine_status)
+    number_machines = sum([len(env.machines[i]) for i in env.machines])
     machine_dict = {'None': [0] * number_machines}
     i = 0
     for machine in machine_status:
@@ -103,7 +120,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
             for operation in env.job_types[type]:
                 if operation['op_name'] == operation_name:
                     machine_type = operation['machine_type']
-                    state += types[machine_type]
+        state += types[machine_type]
     # job list
     for machine in job_list:
         m_list = []

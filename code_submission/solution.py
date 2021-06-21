@@ -24,7 +24,7 @@ class Trainer:
 
         nb_machines = sum([len(self.env.machines[i]) for i in self.env.machines])
         agent = Agent(self.env,job_dict=job_dict, machine_dict=machine_dict, gamma=0.99, epsilon=1.0, alpha=lr, input_dims=len(state), n_actions=number_of_actions, batch_size=64)
-
+        agent.toString()
         now_time = realtime.time()
         total_time = 0
         scores = []

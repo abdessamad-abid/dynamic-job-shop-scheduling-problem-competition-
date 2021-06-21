@@ -49,10 +49,10 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
     #none complited dqn
 
     model = Sequential()
-    model.add(Dense(fc1_dims,input_shape=(input_dims, ), activation='relu'))
+    model.add(Dense(fc1_dims,input_shape=(input_dims, )))
     model.add(Dropout(0.2))
 
-    model.add(Dense(fc2_dims, activation='relu'))
+    model.add(Dense(fc2_dims))
     model.add(Dropout(0.2))
 
     model.add(Dense(n_actions))
@@ -66,7 +66,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=5000):
+    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=1000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
@@ -86,7 +86,11 @@ class Agent:
             print(new_state.shape,state.shape)
             self.memory_per_machine[i].store_transition(state, list_action[i], reward, new_state, done)
 
+    def toString(self):
+        print("action_space:", self.action_space,"nb_machine: ",self.nb_machine)
+
     def act(self, state):
+        state = state[np.newaxis, :]
         action_list=[]
         for i in range(self.nb_machine):
             rand = np.random.random()
@@ -114,7 +118,7 @@ class Agent:
 
                 batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-                q_target[batch_index, action_indices] = reward + self.gamma*np.max(q_next, axis=1)*done #done= 1 - done
+                q_target[batch_index, action_indices] = reward + self.gamma*np.max(q_next, axis=1)*done
 
                 self.q_eval_per_machine[i].fit(state, q_target, verbose=0) #surpress the output
 
