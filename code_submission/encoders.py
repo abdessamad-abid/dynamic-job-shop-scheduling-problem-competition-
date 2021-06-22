@@ -1,22 +1,51 @@
 import numpy as np
 
 
-def decode(action_list, job_dict, machine_dict):
-    job_assignment = {}
+def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_list, job_assignment):
     for i in range(len(action_list)):
-        machine = ''
+        m = ''
         job = ''
-        for m in machine_dict:
-            if machine_dict[m][i] == 1:
-                machine = m
+        for k in machine_dict:
+            if machine_dict[k][i] == 1:
+                m = k
         if action_list[i] != 0:
             for j in job_dict:
-                if job_dict[j][action_list[i]-1] == 1:
+                if job_dict[j][action_list[i] - 1] == 1:
                     job = j
         else:
             job = None
-        job_assignment[machine] = job
+        if machine_status[m]['job'] == job:
+            job_assignment[m] = job
+        elif machine_status[m]['job'] != None:
+            if job_status[machine_status[m]['job']]['status'] == 'done':
+                job_assignment[m] = None
+            else:
+                job_assignment[m] = machine_status[m]['job']
+        else:
+            if job == None:
+                job_assignment[m] = None
+            else:
+                exists = False
+                for machine in machine_status:
+                    if machine_status[m]['job'] == job:
+                        exists =True
+                if exists:
+                    job_assignment[m] = None
+                else:
+                    if len(job_list[m]) == 0:
+                        job_assignment[m] = None
+                    elif job in job_list[m]:
+                        job_assignment[m] = job
+                    else:
+                        job_assignment[m] = job
+
+        if machine_status[m]['status'] == 'down' :
+            job_assignment[m] = None
     return job_assignment
+
+
+
+
 
 
 def encoder(machine_status, job_status, job_list, env, done, time):
@@ -100,6 +129,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
                 machine_dict[machine] = [0] * number_machines
 
     # job status
+
     for type in env.jobs:
         for job in env.jobs[type]:
             if job in job_status:
@@ -123,7 +153,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
                     for operation in env.job_types[type]:
                         if operation['op_name'] == operation_name:
                             machine_type = operation['machine_type']
-                state += types[machine_type]
+                            state += types[machine_type]
 
             else:
                 state += working_state['none']

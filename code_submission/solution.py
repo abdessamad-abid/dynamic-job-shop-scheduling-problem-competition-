@@ -23,7 +23,9 @@ class Trainer:
         number_of_actions = 1 + sum([len(self.env.jobs[i]) for i in self.env.jobs])
 
         agent = Agent(self.env,job_dict=job_dict, machine_dict=machine_dict, gamma=0.99, epsilon=1.0, alpha=lr, input_dims=len(state), n_actions=number_of_actions, batch_size=64)
-
+        agent.machine_status = machine_status
+        agent.job_status = job_status
+        agent.job_list = job_list
         now_time = realtime.time()
         total_time = 0
         scores = []
@@ -36,6 +38,9 @@ class Trainer:
             while not done:
                 job_assignment = agent.act(state)
                 machine_status, job_status, time, reward, job_list, done = self.env.step(job_assignment)
+                agent.machine_status = machine_status
+                agent.job_status = job_status
+                agent.job_list = job_list
                 new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']
                 agent.remember(state,agent.action_list, score,new_state, done)
@@ -44,7 +49,7 @@ class Trainer:
                 now_time = realtime.time()
                 total_time += now_time - last_time
                 self.iter += 1
-
+                print('iteration',self.iter,'done:', done)
                 if done:
                     print(self.iter, total_time)
 

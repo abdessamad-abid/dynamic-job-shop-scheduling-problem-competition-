@@ -70,6 +70,10 @@ class Agent:
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
+        self.machine_status = {}
+        self.job_status ={}
+        self.job_list = {}
+        self.job_assignment = {}
         self.nb_machine=sum([len(env.machines[i]) for i in self.env.machines])
         self.job_dict = job_dict
         self.machine_dict = machine_dict
@@ -79,7 +83,7 @@ class Agent:
         self.batch_size = batch_size
         self.memory_per_machine = [ReplayBuffer(mem_size, input_dims, n_actions, discrete=True) for i in range(self.nb_machine)]
 
-        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 1024, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
+        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 512, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
 
     def remember(self, state, list_action, reward, new_state, done):
         for i in range(0,self.nb_machine):
@@ -96,8 +100,9 @@ class Agent:
             else:
                 actions = self.q_eval_per_machine[i].predict(state)
                 self.action_list.append(np.argmax(actions))
-        job_assignment = decode(self.action_list, self.job_dict, self.machine_dict)
-        return job_assignment
+        self.job_assignment = decode(self.action_list, self.job_dict, self.machine_dict, self.machine_status, self.job_status, self.job_list, self.job_assignment)
+        print(self.job_assignment)
+        return self.job_assignment
 
     def learn(self):
         for i in range(self.nb_machine):
