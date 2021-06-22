@@ -33,7 +33,7 @@ class Trainer:
         for i in range(n_games):
             done = False
             score = 0
-
+            self.iter = 0
             state,job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
             while not done:
                 job_assignment = agent.act(state)

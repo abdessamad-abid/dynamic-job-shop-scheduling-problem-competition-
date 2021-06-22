@@ -14,33 +14,40 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
                     job = j
         else:
             job = None
-        if machine_status[m]['job'] == job:
-            job_assignment[m] = job
-        elif machine_status[m]['job'] != None:
-            if job_status[machine_status[m]['job']]['status'] == 'done':
-                job_assignment[m] = None
-            else:
-                job_assignment[m] = machine_status[m]['job']
-        else:
-            if job == None:
-                job_assignment[m] = None
-            else:
-                exists = False
-                for machine in machine_status:
-                    if machine_status[m]['job'] == job:
-                        exists =True
-                if exists:
-                    job_assignment[m] = None
-                else:
-                    if len(job_list[m]) == 0:
-                        job_assignment[m] = None
-                    elif job in job_list[m]:
-                        job_assignment[m] = job
-                    else:
-                        job_assignment[m] = job
-
         if machine_status[m]['status'] == 'down' :
             job_assignment[m] = None
+        else:
+            if machine_status[m]['job'] == job:
+                job_assignment[m] = job
+            elif machine_status[m]['job'] != None:
+                if job_status[machine_status[m]['job']]['status'] == 'done':
+                    job_assignment[m] = None
+                else:
+                    job_assignment[m] = machine_status[m]['job']
+            else:
+                if job == None:
+                    job_assignment[m] = None
+                else:
+                    exists = False
+                    for machine in machine_status:
+                        if machine_status[m]['job'] == job:
+                            exists =True
+                    if exists:
+                        job_assignment[m] = None
+                    else:
+                        if len(job_list[m]) == 0:
+                            job_assignment[m] = None
+                        elif job in job_list[m]:
+                            job_assignment[m] = job
+                        else:
+                            job_assignment[m] = job
+    for machine in job_assignment:
+        if job_assignment[machine] == None:
+            for job in job_list[machine]:
+                if job in job_assignment.values():
+                    pass
+                else:
+                    job_assignment[machine] = job
     return job_assignment
 
 

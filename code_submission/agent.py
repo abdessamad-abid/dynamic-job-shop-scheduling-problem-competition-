@@ -17,10 +17,10 @@ class ReplayBuffer:
         self.reward_memory = np.zeros(self.mem_size)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
 
-    def store_transition(self, state, action, reward, state_, done):
+    def store_transition(self, state, action, reward, new_state, done):
         index = self.mem_cntr % self.mem_size
         self.state_memory[index] = state
-        self.new_state_memory[index] = state_
+        self.new_state_memory[index] = new_state
         # store one hot encoding of actions, if appropriate
         if self.discrete:
             actions = np.zeros(self.action_memory.shape[1])
@@ -40,13 +40,11 @@ class ReplayBuffer:
         actions = self.action_memory[batch]
         rewards = self.reward_memory[batch]
         states_ = self.new_state_memory[batch]
-        terminal = self.terminal_memory[batch]
+        done = self.terminal_memory[batch]
 
-        return states, actions, rewards, states_, terminal
+        return states, actions, rewards, states_, done
 
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
-
-    #none complited dqn
 
     model = Sequential()
     model.add(Dense(fc1_dims,input_shape=(input_dims, )))
