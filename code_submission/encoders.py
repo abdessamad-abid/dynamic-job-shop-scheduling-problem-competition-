@@ -98,6 +98,7 @@ def encoder(machine_status, job_status, job_list, env, done, time):
                 i += 1
             else:
                 machine_dict[machine] = [0] * number_machines
+
     # job status
     for type in env.jobs:
         for job in env.jobs[type]:
@@ -111,41 +112,54 @@ def encoder(machine_status, job_status, job_list, env, done, time):
 
                 state.append(job_status[job]['remain_process_time'])
                 state.append(job_status[job]['remain_pending_time'])
+
                 if job_status[job]['machine'] != None:
                     state += machine_dict[job_status[job]['machine']]
                 else:
                     state += machine_dict['None']
+
                 operation_name = job_status[job]['op']
                 for type in env.job_types:
                     for operation in env.job_types[type]:
                         if operation['op_name'] == operation_name:
                             machine_type = operation['machine_type']
                 state += types[machine_type]
+
             else:
                 state += working_state['none']
                 state.append(0)#priority
                 state.append(0)#arrival
+
                 state.append(0)#remaining process time
                 state.append(0)#remainig pending time
+
                 state += machine_dict['None']
+
                 state += types['none']
+
+
     # job list
-    for machine in job_list:
-        m_list = []
-        if job_list[machine] == []:
-            state += [0] * number_of_jobs
-        else:
-            for type in env.jobs:
-                for job in env.jobs[type]:
-                    if job in job_list[machine]:
-                        m_list.append(1)
-                    else:
-                        m_list.append(0)
-        state += m_list
+    for type in env.machines:
+        for machine in env.machines[type]:
+            if machine in job_list:
+                m_list = []
+                if job_list[machine] == []:
+                    state += [0] * number_of_jobs
+                else:
+                    for type in env.jobs:
+                        for job in env.jobs[type]:
+                            if job in job_list[machine]:
+                                m_list.append(1)
+                            else:
+                                m_list.append(0)
+            else:
+                m_list = [0] * number_of_jobs
+            state += m_list
     if done:
         state.append(1)
     else:
         state.append(0)
 
     state.append(time)
+
     return np.array(state), job_dict, machine_dict

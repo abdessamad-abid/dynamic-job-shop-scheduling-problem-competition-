@@ -66,7 +66,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.9995,  epsilon_end=0.01, mem_size=1000):
+    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.991,  epsilon_end=0.01, mem_size=1000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
@@ -79,27 +79,24 @@ class Agent:
         self.batch_size = batch_size
         self.memory_per_machine = [ReplayBuffer(mem_size, input_dims, n_actions, discrete=True) for i in range(self.nb_machine)]
 
-        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 256, 256) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
+        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 1024, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
 
     def remember(self, state, list_action, reward, new_state, done):
-        for i in range(self.nb_machine):
-            print(new_state.shape,state.shape)
+        for i in range(0,self.nb_machine):
             self.memory_per_machine[i].store_transition(state, list_action[i], reward, new_state, done)
 
-    def toString(self):
-        print("action_space:", self.action_space,"nb_machine: ",self.nb_machine)
 
     def act(self, state):
         state = state[np.newaxis, :]
-        action_list=[]
+        self.action_list=[]
         for i in range(self.nb_machine):
             rand = np.random.random()
             if rand < self.epsilon_list[i]:
-                action_list.append(np.random.choice(self.action_space))
+                self.action_list.append(np.random.choice(self.action_space))
             else:
                 actions = self.q_eval_per_machine[i].predict(state)
-                action_list.append(np.argmax(actions))
-        job_assignment = decode(action_list, self.job_dict, self.machine_dict)
+                self.action_list.append(np.argmax(actions))
+        job_assignment = decode(self.action_list, self.job_dict, self.machine_dict)
         return job_assignment
 
     def learn(self):
