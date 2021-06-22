@@ -64,7 +64,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, job_dict, machine_dict, epsilon, batch_size, input_dims, epsilon_dec=0.991,  epsilon_end=0.01, mem_size=1000):
+    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.991,  epsilon_end=0.01, mem_size=1000):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
@@ -73,13 +73,12 @@ class Agent:
         self.job_list = {}
         self.job_assignment = {}
         self.nb_machine=sum([len(env.machines[i]) for i in self.env.machines])
-        self.job_dict = job_dict
-        self.machine_dict = machine_dict
         self.epsilon_list = [epsilon for i in range(self.nb_machine)]
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_end
         self.batch_size = batch_size
         self.memory_per_machine = [ReplayBuffer(mem_size, input_dims, n_actions, discrete=True) for i in range(self.nb_machine)]
+        self.done = False
 
         self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 512, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
 
@@ -87,8 +86,13 @@ class Agent:
         for i in range(0,self.nb_machine):
             self.memory_per_machine[i].store_transition(state, list_action[i], reward, new_state, done)
 
+    def act(self, machine_status, job_status, time, job_list):
 
-    def act(self, state):
+        state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, self.done, time)
+
+        self.job_dict = job_dict
+        self.machine_dict = machine_dict
+
         state = state[np.newaxis, :]
         self.action_list=[]
         for i in range(self.nb_machine):
@@ -99,7 +103,6 @@ class Agent:
                 actions = self.q_eval_per_machine[i].predict(state)
                 self.action_list.append(np.argmax(actions))
         self.job_assignment = decode(self.action_list, self.job_dict, self.machine_dict, self.machine_status, self.job_status, self.job_list, self.job_assignment)
-        print(self.job_assignment)
         return self.job_assignment
 
     def learn(self):

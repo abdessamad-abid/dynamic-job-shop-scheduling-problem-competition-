@@ -54,10 +54,6 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
     return job_assignment
 
 
-
-
-
-
 def encoder(machine_status, job_status, job_list, env, done, time):
     ## machine status one-hot encoded:
     state = []
