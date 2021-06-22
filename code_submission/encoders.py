@@ -42,12 +42,15 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
                         else:
                             job_assignment[m] = job
     for machine in job_assignment:
-        if job_assignment[machine] == None:
-            for job in job_list[machine]:
-                if job in job_assignment.values():
-                    pass
-                else:
-                    job_assignment[machine] = job
+        if machine_status[machine]['status'] == 'down' :
+            job_assignment[machine] = None
+        else:
+            if job_assignment[machine] == None:
+                for job in job_list[machine]:
+                    if job in job_assignment.values():
+                        pass
+                    else:
+                        job_assignment[machine] = job
     return job_assignment
 
 
