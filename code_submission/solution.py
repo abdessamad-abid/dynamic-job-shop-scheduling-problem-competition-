@@ -41,6 +41,9 @@ class Trainer:
                 agent.machine_status = machine_status
                 agent.job_status = job_status
                 agent.job_list = job_list
+                for job in job_status:
+                    if (self.iter % 20 == 0):
+                        print("job: ", job, "status: ", job_status[job]['status'])
                 new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']
                 agent.remember(state,agent.action_list, score,new_state, done)
