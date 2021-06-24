@@ -18,7 +18,7 @@ class Trainer:
 
         done = False
         state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
-        lr = 0.005
+        lr = 0.01
         n_games = 2
         number_of_actions = 1 + sum([len(self.env.jobs[i]) for i in self.env.jobs])
 
@@ -42,8 +42,8 @@ class Trainer:
                 agent.job_list = job_list
                 agent.done = done
                 machine_status, job_status, time, reward, job_list, done = self.env.step(job_assignment)
-                for job in job_status:
-                    if (self.iter % 20 == 0):
+                if (self.iter % 20 == 0):
+                    for job in job_status:
                         print("job: ", job, "status: ", job_status[job]['status'])
                 new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']

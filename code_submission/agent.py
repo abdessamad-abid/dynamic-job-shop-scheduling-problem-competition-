@@ -39,10 +39,10 @@ class ReplayBuffer:
         states = self.state_memory[batch]
         actions = self.action_memory[batch]
         rewards = self.reward_memory[batch]
-        states_ = self.new_state_memory[batch]
+        new_states = self.new_state_memory[batch]
         done = self.terminal_memory[batch]
 
-        return states, actions, rewards, states_, done
+        return states, actions, rewards, new_states, done
 
 def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
@@ -64,7 +64,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 
 class Agent:
-    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.991,  epsilon_end=0.01, mem_size=1000):
+    def __init__(self, env, alpha, gamma, n_actions, epsilon, batch_size, input_dims, epsilon_dec=0.991,  epsilon_end=0.01, mem_size=1500):
         self.action_space = [i for i in range(n_actions)]
         self.gamma = gamma
         self.env = env
@@ -80,7 +80,7 @@ class Agent:
         self.memory_per_machine = [ReplayBuffer(mem_size, input_dims, n_actions, discrete=True) for i in range(self.nb_machine)]
         self.done = False
 
-        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 512, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
+        self.q_eval_per_machine = [build_dqn(alpha, n_actions, input_dims, 1024, 512) for i in range(self.nb_machine)] #Q_networ for evaluating each machine
 
     def remember(self, state, list_action, reward, new_state, done):
         for i in range(0,self.nb_machine):

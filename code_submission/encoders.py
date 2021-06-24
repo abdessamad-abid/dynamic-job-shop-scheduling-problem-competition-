@@ -20,37 +20,27 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
             if machine_status[m]['job'] == job:
                 job_assignment[m] = job
             elif machine_status[m]['job'] != None:
-                if job_status[machine_status[m]['job']]['status'] == 'done':
-                    job_assignment[m] = None
-                else:
-                    job_assignment[m] = machine_status[m]['job']
+                job_assignment[m] = machine_status[m]['job']
             else:
                 if job == None:
                     job_assignment[m] = None
                 else:
-                    exists = False
-                    for machine in machine_status:
-                        if machine_status[m]['job'] == job:
-                            exists =True
-                    if exists:
-                        job_assignment[m] = None
-                    else:
-                        if len(job_list[m]) == 0:
-                            job_assignment[m] = None
-                        elif job in job_list[m]:
-                            job_assignment[m] = job
-                        else:
+                    if job in job_list[m]:
+                        if not(job in job_assignment.values()):
                             job_assignment[m] = job
     for machine in job_assignment:
-        if machine_status[machine]['status'] == 'down' :
-            job_assignment[machine] = None
-        else:
-            if job_assignment[machine] == None:
-                for job in job_list[machine]:
-                    if job in job_assignment.values():
-                        pass
-                    else:
-                        job_assignment[machine] = job
+        if machine_status[machine]['status'] != 'down':
+            exists = False
+            if job_assignment[machine] == None :
+                if len(job_list[machine]) == 0:
+                    job_assignment[machine] = None
+                else:
+                    for job in job_dict:
+                        if not(job in job_assignment.values()):
+                            if (job in job_list[machine]) and (exists==False):
+                                job_assignment[machine] = job
+                                exists = True
+
     return job_assignment
 
 
@@ -104,15 +94,6 @@ def encoder(machine_status, job_status, job_list, env, done, time):
             T[i] = 1
             job_dict[job] = T
             i += 1
-    for type in env.machines:
-        for machine in env.machines[type]:
-            if machine in machine_status:
-                if machine_status[machine]['job'] != None:
-                    state += job_dict[machine_status[machine]['job']]
-                else:
-                    state += job_dict['None']
-            else:
-                state += job_dict['None']
 
 
     working_state = {'work': [1, 0, 0, 0],
@@ -126,13 +107,10 @@ def encoder(machine_status, job_status, job_list, env, done, time):
     i = 0
     for type in env.machines:
         for machine in env.machines[type]:
-            if machine in machine_status:
-                T = [0] * number_machines
-                T[i] = 1
-                machine_dict[machine] = T
-                i += 1
-            else:
-                machine_dict[machine] = [0] * number_machines
+            T = [0] * number_machines
+            T[i] = 1
+            machine_dict[machine] = T
+            i += 1
 
     # job status
 
@@ -145,8 +123,6 @@ def encoder(machine_status, job_status, job_list, env, done, time):
                     state.append(0)
                 else:
                     state.append(job_status[job]['arrival'])
-
-                state.append(job_status[job]['remain_process_time'])
                 state.append(job_status[job]['remain_pending_time'])
 
                 if job_status[job]['machine'] != None:
