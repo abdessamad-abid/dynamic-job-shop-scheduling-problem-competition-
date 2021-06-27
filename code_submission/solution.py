@@ -19,10 +19,10 @@ class Trainer:
         done = False
         state, job_dict, machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
         lr = 0.01
-        n_games = 2
+        n_games = 100
         number_of_actions = 1 + sum([len(self.env.jobs[i]) for i in self.env.jobs])
 
-        agent = Agent(self.env , gamma=0.99, epsilon=1.0, alpha=lr, input_dims=len(state), n_actions=number_of_actions, batch_size=128)
+        agent = Agent(self.env , gamma=0.99, epsilon=1.0, alpha=lr, input_dims=len(state), n_actions=number_of_actions, batch_size=1024)
         agent.machine_status = machine_status
         agent.job_status = job_status
         agent.job_list = job_list
