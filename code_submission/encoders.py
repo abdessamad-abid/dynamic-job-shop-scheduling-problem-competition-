@@ -28,6 +28,7 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
                     if job in job_list[m]:
                         if not(job in job_assignment.values()):
                             job_assignment[m] = job
+    """
     for machine in job_assignment:
         if machine_status[machine]['status'] != 'down':
             exists = False
@@ -40,7 +41,7 @@ def decode(action_list, job_dict, machine_dict, machine_status, job_status, job_
                             if (job in job_list[machine]) and (exists==False):
                                 job_assignment[machine] = job
                                 exists = True
-
+    """
     return job_assignment
 
 

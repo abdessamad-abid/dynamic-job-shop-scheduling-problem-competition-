@@ -97,11 +97,11 @@ class Agent:
         self.action_list=[]
         for i in range(self.nb_machine):
             rand = np.random.random()
-            if rand < self.epsilon_list[i]:
-                self.action_list.append(np.random.choice(self.action_space))
-            else:
-                actions = self.q_eval_per_machine[i].predict(state)
-                self.action_list.append(np.argmax(actions))
+            #if rand < self.epsilon_list[i]:
+            self.action_list.append(np.random.choice(self.action_space))
+            #else:
+                #actions = self.q_eval_per_machine[i].predict(state)
+                #self.action_list.append(np.argmax(actions))
         self.job_assignment = decode(self.action_list, self.job_dict, self.machine_dict, self.machine_status, self.job_status, self.job_list, self.job_assignment)
         return self.job_assignment
 

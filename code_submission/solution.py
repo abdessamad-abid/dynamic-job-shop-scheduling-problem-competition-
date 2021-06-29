@@ -1,6 +1,6 @@
 from agent import Agent
 import time as realtime
-from collections import defaultdict
+
 import numpy as np
 from encoders import *
 
@@ -48,7 +48,7 @@ class Trainer:
                 new_state, job_dict,machine_dict = encoder(machine_status, job_status, job_list, self.env, done, time)
                 score +=reward['makespan']+reward['PTV']
                 agent.remember(state,agent.action_list, score,new_state, done)
-                agent.learn()
+                #agent.learn()
                 state = new_state
                 last_time = now_time
                 now_time = realtime.time()
@@ -62,7 +62,6 @@ class Trainer:
                     break
             if total_time + 2 * (now_time - last_time) > run_time:
                 break
-            eps_history.append(agent.epsilon_list[i])
             scores.append(score)
             machine_status, job_status, time, job_list = self.env.reset()
 
